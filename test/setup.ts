@@ -1,4 +1,4 @@
-import { publicActions, http, createTestClient, walletActions } from "viem";
+import { publicActions, http, createTestClient, walletActions, zeroAddress } from "viem";
 import { foundry, Chain } from "viem/chains";
 
 /**
@@ -25,14 +25,9 @@ export const anvil = {
     },
 } as const satisfies Chain;
 
-export const publicClient = createTestClient({
+export const client = createTestClient({
     chain: anvil,
     mode: "anvil",
     transport: http(),
-}).extend(publicActions);
-
-export const walletClient = createTestClient({
-    chain: anvil,
-    mode: "anvil",
-    transport: http(),
-}).extend(walletActions);
+    account: zeroAddress,
+}).extend(walletActions).extend(publicActions);

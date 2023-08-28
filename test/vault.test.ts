@@ -1,12 +1,12 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { zeroAddress, decodeFunctionData } from "viem";
 
-import { publicClient, walletClient } from "./setup";
+import { client } from "./setup";
 import { ERC20ABI } from "./abis/erc20ABI";
 import { Vault } from "../src/vault";
 import { IVaultABI } from "../src/abi/IVaultABI";
 
-let vault = new Vault("0x5d344226578DC100b2001DA251A4b154df58194f", publicClient, walletClient);
+let vault = new Vault("0x5d344226578DC100b2001DA251A4b154df58194f", client);
 const FORK_BLOCK_NUMBER = BigInt(17883751);
 // some random address that has a lot of ETH & DAI
 const USER_ADDRESS = "0x6FF8E4DB500cBd77d1D181B8908E022E29e0Ec4A";
@@ -15,7 +15,7 @@ const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 describe.concurrent("read-only", () => {
 
     beforeAll(async () => {
-        await publicClient.reset({
+        await client.reset({
             blockNumber: FORK_BLOCK_NUMBER,
         });
     });
@@ -174,20 +174,11 @@ describe.concurrent("read-only", () => {
 
 describe("write-only", () => {
     beforeEach(async () => {
-        // TODO: is revert() faster?
-        await publicClient.reset({
+        await client.reset({
             blockNumber: FORK_BLOCK_NUMBER,
         });
 
-        await walletClient.reset({
-            blockNumber: FORK_BLOCK_NUMBER,
-        });
-
-        // public client has to impersonate as well because of the simulation request
-        await publicClient.impersonateAccount({
-            address: USER_ADDRESS,
-        });
-        await walletClient.impersonateAccount({
+        await client.impersonateAccount({
             address: USER_ADDRESS,
         });
     });
@@ -196,7 +187,7 @@ describe("write-only", () => {
         await approve(BigInt(1e18));
 
         const hash = await vault.deposit(BigInt(1e18), USER_ADDRESS, { account: USER_ADDRESS });
-        const tx = await publicClient.getTransaction({
+        const tx = await client.getTransaction({
             hash,
         });
 
@@ -215,7 +206,7 @@ describe("write-only", () => {
         await approve(BigInt(1e18));
 
         const hash = await vault.mint(BigInt(1e18), USER_ADDRESS, { account: USER_ADDRESS });
-        const tx = await publicClient.getTransaction({
+        const tx = await client.getTransaction({
             hash,
         });
 
@@ -234,12 +225,12 @@ describe("write-only", () => {
         // user holds vault shares already
         const user = "0xE92cbe5be7631557bF990d7Ff38277047561191f";
         // user doesn't have enough ETH for the tx so we add them for the test
-        await publicClient.setBalance({ address: user, value: BigInt(1e18) });
-        await publicClient.impersonateAccount({
+        await client.setBalance({ address: user, value: BigInt(1e18) });
+        await client.impersonateAccount({
             address: user,
         });
         const hash = await vault.withdraw(BigInt(1e18), user, user, { account: user });
-        const tx = await publicClient.getTransaction({
+        const tx = await client.getTransaction({
             hash,
         });
 
@@ -258,12 +249,12 @@ describe("write-only", () => {
         // user holds vault shares already
         const user = "0xE92cbe5be7631557bF990d7Ff38277047561191f";
         // user doesn't have enough ETH for the tx so we add them for the test
-        await publicClient.setBalance({ address: user, value: BigInt(1e18) });
-        await publicClient.impersonateAccount({
+        await client.setBalance({ address: user, value: BigInt(1e18) });
+        await client.impersonateAccount({
             address: user,
         });
         const hash = await vault.redeem(BigInt(1e18), user, user, { account: user });
-        const tx = await publicClient.getTransaction({
+        const tx = await client.getTransaction({
             hash,
         });
 
@@ -280,7 +271,7 @@ describe("write-only", () => {
 });
 
 function approve(amount: bigint) {
-    return walletClient.writeContract({
+    return client.writeContract({
         account: USER_ADDRESS,
         address: DAI_ADDRESS,
         abi: ERC20ABI,

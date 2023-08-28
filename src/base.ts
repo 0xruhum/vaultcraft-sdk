@@ -1,13 +1,11 @@
-import { Address, PublicClient, WalletClient, Transport, Chain, Account, ParseAccount } from "viem";
+import { Address, PublicClient, WalletClient, Transport, Chain, Account, PublicActions } from "viem";
 
 export class Base {
     address: Address;
-    protected publicClient: PublicClient;
-    protected walletClient: WalletClient<Transport, Chain>;
+    protected client: WalletClient<Transport, Chain> & PublicActions;
 
-    constructor(address: Address, publicClient: PublicClient, walletClient: WalletClient<Transport, Chain>) {
+    constructor(address: Address, walletClient: WalletClient<Transport, Chain, Account> & PublicActions) {
         this.address = address;
-        this.publicClient = publicClient;
-        this.walletClient = walletClient;
+        this.client = walletClient;
     }
 }

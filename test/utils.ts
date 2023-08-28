@@ -1,16 +1,10 @@
-import { publicClient, walletClient } from "./setup";
+import { client } from "./setup";
 
 export async function increaseTime(seconds: number) {
-    await publicClient.increaseTime({
+    await client.increaseTime({
         seconds,
     });
-    await publicClient.mine({
-        blocks: 1,
-    });
-    await walletClient.increaseTime({
-        seconds,
-    });
-    await walletClient.mine({
+    await client.mine({
         blocks: 1,
     });
 }
